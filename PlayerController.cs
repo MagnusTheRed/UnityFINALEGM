@@ -1,15 +1,3 @@
-/*
-Lucas Ayres Student ID 2321346 
-All code was created using the following sources:
- Pandemonium(4/12/2020) Unity 2D Platformer for Complete Beginners Playlist Accessed: 20/10/2024
- Game Maker's Toolkit(2/12/2022) The Unity Tutorial For Complete Beginners Accessed: 20/10/2024
- Brackey's(22/1/2017) How to make a Video Game - Getting Started (Unity) Accessed: 20/10/2024
- Stack Overflow Community. (2015). Spawning player at certain point in Unity [Online]. Stack Overflow. 
- Available from: https://stackoverflow.com/questions/31565355/spawning-player-at-certain-point-in-unity?rq=3 [Accessed 27 Oct 2024]
- Unity Documentation was also used but I didn't get anything the series did not cover. 
- ChatGTP was also used to grade Code for maintability and usability - no content generated only gave suggestions
-*/
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,38 +5,60 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
-    public float baseSpeed = 5f;//Player's staring speed'
-    public float jumpForce = 5f;//Player's jump height/force'
-    public float speedIncreasePerScore = 0.1f;//As player gains score, this increases the player's speed at this rate'
-    [SerializeField]private float currentSpeed; //Used to set the new speed for the player
-   
-
+    public float baseSpeed = 5f; // Player's starting speed
+    public float jumpForce = 5f; // Player's jump height/force
+    public float speedIncreasePerScore = 0.1f; // Rate at which player's speed increases with score
+    [SerializeField] private float currentSpeed; // Used to set the new speed for the player
 
     private Rigidbody2D RigidbodyP;
     private bool isGrounded;
 
+    // Animator reference
+    //private Animator animator; - this didn't work so removed 
+
     void Start()
     {
         RigidbodyP = GetComponent<Rigidbody2D>();
-        currentSpeed = baseSpeed; //Set currentSpeed at baseSpeed 
+        animator = GetComponent<Animator>(); // Get Animator component attached to the player
+        currentSpeed = baseSpeed; // Set currentSpeed to baseSpeed 
     }
 
     void Update()
     {
-        //Allows for currentSpeed to be set as player gains score
+        // Allows for currentSpeed to be set as player gains score
         UpdateSpeed();
 
-        //Allows player to move left/right
+        // Get horizontal movement input
         float move = Input.GetAxis("Horizontal");
+
+        // Update player velocity
         RigidbodyP.velocity = new Vector2(move * currentSpeed, RigidbodyP.velocity.y);
 
-        //Allows player to jump
+        // Update animation parameters
+        animator.SetFloat("Speed", Mathf.Abs(move)); // Set Speed parameter to absolute movement value
+
+        // Flip player sprite based on movement direction
+        if (move > 0)
+        {
+            transform.localScale = new Vector3(1, 1, 1); // Facing right
+        }
+        else if (move < 0)
+        {
+            transform.localScale = new Vector3(-1, 1, 1); // Facing left
+        }
+
+        // Allows player to jump
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             RigidbodyP.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+            //animator.SetTrigger("Jump"); // Trigger the Jump animation - this didn't work 
         }
+
+        // Update grounded animation state
+        //animator.SetBool("IsGrounded", isGrounded); - this didn't work so listed as a bug
     }
-        //Checks if player is grounded 
+
+    // Checks if player is grounded
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
@@ -56,7 +66,8 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
         }
     }
-    //Checks if player is grounded 
+
+    // Checks if player leaves the ground
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
